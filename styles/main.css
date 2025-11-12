@@ -25,6 +25,14 @@ h1 {
   letter-spacing: -0.04em;
 }
 
+h2 {
+  color: white;
+  font-family: "Source Sans Pro", sans-serif;
+  font-size: 2em;
+  letter-spacing: -0.04em;
+}
+
+
 p {
   color: rgb(98, 0, 255);
   font-family: "Comfortaa", cursive;

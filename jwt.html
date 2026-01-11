@@ -1,0 +1,205 @@
+<html>
+    <head>
+        <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" type="text/css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" type="text/css">
+
+        <script>
+            function loadFirebase(config) {
+                firebase.initializeApp(config);
+
+                firebase.auth().onAuthStateChanged(function(user) {
+                    if (user) {
+                        user.getIdToken().then(function(token) {
+                            const userData = {
+                                uid: user.uid,
+                                displayName: user.displayName,
+                                email: user.email,
+                                phoneNumber: user.phoneNumber
+                            };
+                            $('#user').text(JSON.stringify(userData, null, 2));
+                            $('#result').text(token)
+                            $('#jwtio').show();
+                            $('#jwtio').attr('href', `https://jwt.io/#debugger-io?token=${token}`);
+                        })
+                    }
+                });
+            }
+        </script>
+        <style>
+            .header {
+                margin-top: 6rem;
+                text-align: center;
+            }
+
+            .page-section {
+                border-top: 1px solid #eee;
+                padding: 4rem 0;
+                margin-bottom: 0;
+            }
+
+            .page-section h3 {
+                text-transform: uppercase;
+                font-size: 1.4rem;
+                letter-spacing: .2rem;
+                font-weight: 600;
+            }
+
+            .form {
+                margin-top: 1rem;
+            }
+
+            .icon {
+                height: 1.2rem;
+                fill: #222;
+            }
+
+            a .icon {
+                fill: #1EAEDB;
+            }
+
+            /* for pretty printing code/jwt */
+            .prettyprint {
+                background: #fff;
+                font-family: Menlo, 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono', Monaco, Consolas, monospace;
+                font-size: 1.2rem;
+                padding: 2.5rem 3rem;
+                -webkit-font-smoothing: antialiased;
+            }
+
+            .jwt {
+                white-space: pre-wrap;      /* CSS3 */   
+                white-space: -moz-pre-wrap; /* Firefox */    
+                white-space: -pre-wrap;     /* Opera <7 */   
+                white-space: -o-pre-wrap;   /* Opera 7 */    
+                word-wrap: break-word;      /* IE */
+                width: 100%;
+                margin: 1rem 0;
+                display: block;
+            }
+
+            .user-json {
+                overflow: scroll;
+            }
+            
+            .code-example-body {
+                white-space: pre;
+                word-wrap: break-word;
+            }
+        
+            .github-fork {
+                position: absolute;
+                top: 0;
+                right: 0;
+            }
+        </style>
+    </head>
+    <body> 
+        <a class="github-fork" target="_blank" href="https://github.com/check-on-me/firebase-jwt"><img loading="lazy" width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>        
+        <div class="container">
+            <section class="header">
+                <h2 class="title">Firebase JWT</h2>
+                <p>
+                    Tiny tool to generate JWT tokens from Firebase.
+                </p>
+            </section>
+            <div id="loaded-part">
+                <div class="page-section">
+                    <h3>Google login</h3>
+                    <p>As you expect, just that one button.</p>
+                    <p><button id="google-signin">Login with google</button></p>
+                </div>
+                <div class="page-section">
+                    <h3>Email login</h3>
+                    <div class="row">
+                        <div class="six columns">
+                            <label for="email">Email</label>
+                            <input placeholder="your@email.com" class="remember-input u-full-width" type="email" id="email" />
+                        </div>
+                        <div class="six columns">
+                            <label for="password">Password</label>
+                            <input type="password" class="u-full-width" id="password" />
+                        </div>
+                        <button id="email-signin">Login with email</button>
+                    </div>
+                </div>
+                <div class="page-section">
+                    <h3>Phone number login</h3>
+                    <p>This one is a bit tricky, first you need to enter your phone number, then a captcha and then you'll get a code sent to your phone to validate with.</p>
+                    <div id="phone-step-1">
+                        <p>The user's phone number in E.164 format (e.g. +16505550101).</p>
+                        <input class="remember-input" type="text" id="phonenumber"/> 
+                        <button id="phone-getcode">Phone code</button>
+                        <div id="recaptcha-container"></div>
+                    </div>
+                    <div id="phone-step-2" style="display: none">
+                        <label for="phonecode">Verification code</label>
+                        <input type="number" id="phonecode"/>
+                        <button id="phone-signin">Login with phone number</button>
+                    </div>
+                </div>
+                <div class="page-section">
+                    <h3>Current login</h3>
+                    <pre><code class="user-json" id="user"></code></pre>
+                    <code id="result" class="jwt"></code>
+                    <a target="_blank" id="jwtio" style="display: none;" href="">View token contents in JWT.io</a>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Load all of firebase -->
+        <script src="https://www.gstatic.com/firebasejs/8.3.2/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.3.2/firebase-auth.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+
+        <script>
+            let config = {
+                projectId: 'ryanellis--sandbox-001',
+                authDomain: 'ryanellis--sandbox-001.firebaseapp.com',
+                apiKey: 'AIzaSyBbUDk1VL84_xv6UDZOFvO-oMLY8pKxBGs'
+            };
+            
+            $(document).ready(function(){
+                loadFirebase(config);
+
+                function handleAuthError(error) {
+                    if (error.code === "auth/unauthorized-domain") {
+                        const authDomain = firebase.auth().app.options.authDomain;
+                        const projectName = authDomain.replace('.firebaseapp.com', '');
+                        $('#result').html(`<p>${error.message}</p><p><a target="_blank" href="https://console.firebase.google.com/u/0/project/${projectName}/authentication/providers">Open</a></p>`);
+                        return;
+                    }
+                    $('#result').text(error.message);
+                }
+
+                $('#google-signin').on('click', function() {
+                    var provider = new firebase.auth.GoogleAuthProvider();
+                    firebase.auth().signInWithPopup(provider).then(function() {}, handleAuthError);
+                })
+
+                $('#email-signin').on('click', function() {
+                    var cred = firebase.auth().signInWithEmailAndPassword(
+                        $('#email').val(),
+                        $('#password').val()
+                    ).then(function(){}, handleAuthError);
+                })
+
+                $('#phone-getcode').on('click', function(){
+                    const recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container');
+                    firebase.auth().signInWithPhoneNumber(
+                        $('#phonenumber').val(),
+                        recaptchaVerifier
+                    ).then(function(result) {
+                        $('#phone-signin').unbind('click');
+                        $('#phone-step-1').hide();
+                        $('#phone-step-2').show();
+                        $('#phone-signin').on('click', function() {
+                            result.confirm($('#phonecode').val())
+                        });
+                    });
+                })
+            })
+        </script>
+    </body>
+</html>
